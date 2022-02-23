@@ -11,6 +11,9 @@ namespace Chrissileinus\React\MySQL;
 
 use React\MySQL;
 
+/**
+ * A pool of React\MySQL connections
+ */
 class Pool
 {
 

@@ -9,6 +9,9 @@
 
 namespace Chrissileinus\React\MySQL;
 
+/**
+ * A pool of React\MySQL connections with additional commandset like Query, Insert.....
+ */
 class MySQL extends Pool
 {
   static function query(string $query): \React\Promise\PromiseInterface
@@ -26,6 +29,11 @@ class MySQL extends Pool
   static function queryStream(string $query): \React\Stream\ReadableStreamInterface
   {
     return self::get()->queryStream($query);
+  }
+
+  static function ping(): \React\Promise\PromiseInterface
+  {
+    return self::get()->ping();
   }
 
   static function insert(string $table, array $inserts, array $indexes = null): \React\Promise\PromiseInterface
