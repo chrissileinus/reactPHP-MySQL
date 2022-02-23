@@ -1,0 +1,19 @@
+{
+    "name": "chrissileinus/reactphp-mysql",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Chrissileinus\\ReactphpMysql\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "chrissileinus",
+            "email": "chrissileinus@googlemail.com"
+        }
+    ],
+    "require": {
+        "react/mysql": "^0.5.6"
+    }
+}
