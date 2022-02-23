@@ -14,6 +14,15 @@ namespace Chrissileinus\React\MySQL;
  */
 class MySQL extends Pool
 {
+  /**
+   * Performs an async query.
+   * 
+   * This method returns a promise that will resolve with a `QueryResult` on
+   * success or will reject with an `Exception` on error. 
+   *
+   * @param  string                          $query
+   * @return \React\Promise\PromiseInterface
+   */
   static function query(string $query): \React\Promise\PromiseInterface
   {
     return self::get()->query($query)->then(
@@ -26,16 +35,44 @@ class MySQL extends Pool
     );
   }
 
+  /**
+   * Performs an async query and streams the rows of the result set.
+   *
+   * This method returns a readable stream that will emit each row of the
+   * result set as a `data` event
+   * 
+   * @param  string                                $query
+   * @return \React\Stream\ReadableStreamInterface
+   */
   static function queryStream(string $query): \React\Stream\ReadableStreamInterface
   {
     return self::get()->queryStream($query);
   }
 
+  /**
+   * Ping the connection.
+   *
+   * This method returns a promise that will resolve (with a void value) on
+   * success or will reject with an `Exception` on error.
+   *
+   * @return \React\Promise\PromiseInterface
+   */
   static function ping(): \React\Promise\PromiseInterface
   {
     return self::get()->ping();
   }
 
+  /**
+   * Prepare a insert statment and performs an async query.
+   * 
+   * This method returns a promise that will resolve with a `QueryResult` on
+   * success or will reject with an `Exception` on error. 
+   *
+   * @param  string                          $table   Table name
+   * @param  array                           $inserts A array with associative arrays with matching keys and values
+   * @param  array|null                      $indexes A array of indexes to perform "ON DUPLICATE KEY UPDATE"
+   * @return \React\Promise\PromiseInterface
+   */
   static function insert(string $table, array $inserts, array $indexes = null): \React\Promise\PromiseInterface
   {
     if (array_depth($inserts) < 2) $inserts = [$inserts];
@@ -80,6 +117,18 @@ class MySQL extends Pool
     return self::query($query);
   }
 
+  /**
+   * Prepare a update statment and performs an async query.
+   * 
+   * This method returns a promise that will resolve with a `QueryResult` on
+   * success or will reject with an `Exception` on error. 
+   *
+   * @param  string                          $table Table name
+   * @param  array                           $set   A associative arrays with matching keys and values
+   * @param  array                           $where
+   * @param  int|array                       $limit A int as limit or a array like [int offset, int limit]
+   * @return \React\Promise\PromiseInterface
+   */
   static function update(string $table, array $set, array $where, $limit = null): \React\Promise\PromiseInterface
   {
     $sqlWhere = self::genWhere($where);
@@ -104,6 +153,17 @@ class MySQL extends Pool
     return self::query($query);
   }
 
+  /**
+   * Prepare a delete statment and performs an async query.
+   * 
+   * This method returns a promise that will resolve with a `QueryResult` on
+   * success or will reject with an `Exception` on error. 
+   *
+   * @param  string                          $table Table name
+   * @param  array                           $where 
+   * @param  int|array                       $limit A int as limit or a array like [int offset, int limit]
+   * @return \React\Promise\PromiseInterface
+   */
   static function delete(string $table, array $where, $limit = null): \React\Promise\PromiseInterface
   {
     $sqlWhere = self::genWhere($where);
@@ -115,7 +175,20 @@ class MySQL extends Pool
     return self::query($query);
   }
 
-  static function select(string $table, $fields = null, array $where = null, $order = null, $limit = null)
+  /**
+   * Prepare a select statment and performs an async query.
+   * 
+   * This method returns a promise that will resolve with a `QueryResult` on
+   * success or will reject with an `Exception` on error. 
+   *
+   * @param  string                          $table  Table name
+   * @param  string|array                    $fields A array of selected Fields or "*"
+   * @param  array|null                      $where
+   * @param  string|array                    $order
+   * @param  int|array                       $limit  A int as limit or a array like [int offset, int limit]
+   * @return \React\Promise\PromiseInterface
+   */
+  static function select(string $table, $fields = null, array $where = null, $order = null, $limit = null): \React\Promise\PromiseInterface
   {
     $sqlFields = (function () use ($fields) {
       if (is_string($fields)) return "`{$fields}`";
