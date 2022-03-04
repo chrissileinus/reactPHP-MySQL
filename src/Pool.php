@@ -16,7 +16,6 @@ use React\MySQL;
  */
 class Pool
 {
-
   private static $pool;
   private static $poolSize;
   private static $poolPointer = 0;
@@ -32,11 +31,9 @@ class Pool
   {
     self::$poolSize = $poolSize;
 
-    $sqlFactory = new MySQL\Factory();
-
     self::$pool = [];
-    for ($p = 0; $p < $poolSize; $p++) {
-      self::$pool[$p] = $sqlFactory->createLazyConnection($sqlUri);
+    for ($p = 0; $p < self::$poolSize; $p++) {
+      self::$pool[$p] = new Connection($sqlUri);
     }
   }
 
@@ -47,8 +44,32 @@ class Pool
    */
   static function get(): MySQL\ConnectionInterface
   {
-    self::$poolPointer = (self::$poolPointer + 1) % self::$poolSize;
+    return self::$pool[self::nextPointerByLoad()];
+  }
 
-    return self::$pool[self::$poolPointer];
+  static private function nextPointer()
+  {
+    return (self::$poolPointer + 1) % self::$poolSize;
+  }
+  static private function nextPointerByLoad()
+  {
+    $pointer = self::nextPointer();
+
+    if (self::$pool[$pointer]->busyCounter() == 0) return $pointer;
+
+    $min = null;
+    $busyCounters = [];
+    for ($p = 0; $p < self::$poolSize; $p++) {
+      $busyCounters[$p] = self::$pool[$p]->busyCounter();
+
+      if (self::$pool[$p]->busyCounter() == 0) return $p;
+
+      if ($busyCounters[$p] < $min || $min === null) {
+        $min = $busyCounters[$p];
+        $pointer = $p;
+      }
+    }
+
+    return $pointer;
   }
 }
