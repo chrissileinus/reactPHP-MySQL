@@ -12,56 +12,8 @@ namespace Chrissileinus\React\MySQL;
 /**
  * A pool of React\MySQL connections with additional commandset like Query, Insert.....
  */
-class MySQL extends Pool
+class Command extends Pool
 {
-  /**
-   * Performs an async query.
-   * 
-   * This method returns a promise that will resolve with a `QueryResult` on
-   * success or will reject with an `Exception` on error. 
-   *
-   * @param  string                          $query
-   * @return \React\Promise\PromiseInterface
-   */
-  static function query(string $query): \React\Promise\PromiseInterface
-  {
-    return self::get()->query($query)->then(
-      function (\React\MySQL\QueryResult $result) {
-        return $result;
-      },
-      function (\Exception $e) use ($query) {
-        \D1ca\tools::databaseError($e, $query);
-      }
-    );
-  }
-
-  /**
-   * Performs an async query and streams the rows of the result set.
-   *
-   * This method returns a readable stream that will emit each row of the
-   * result set as a `data` event
-   * 
-   * @param  string                                $query
-   * @return \React\Stream\ReadableStreamInterface
-   */
-  static function queryStream(string $query): \React\Stream\ReadableStreamInterface
-  {
-    return self::get()->queryStream($query);
-  }
-
-  /**
-   * Ping the connection.
-   *
-   * This method returns a promise that will resolve (with a void value) on
-   * success or will reject with an `Exception` on error.
-   *
-   * @return \React\Promise\PromiseInterface
-   */
-  static function ping(): \React\Promise\PromiseInterface
-  {
-    return self::get()->ping();
-  }
-
   /**
    * Prepare a insert statment and performs an async query.
    * 

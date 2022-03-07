@@ -9,24 +9,21 @@
 
 namespace Chrissileinus\React\MySQL;
 
-use Evenement\EventEmitterTrait;
 use React\MySQL;
-use React\MySQL\QueryResult;
-use React\Stream\ReadableStreamInterface;
 
 /**
- * A pool of React\MySQL connections
+ * A single React\MySQL connection
  */
-class Connection implements MySQL\ConnectionInterface
+class Connection implements MySQL\ConnectionInterface, \Evenement\EventEmitterInterface
 {
-  use EventEmitterTrait;
+  use \Evenement\EventEmitterTrait;
 
   protected $connection;
-  protected int $busyCounter = 0;
+  protected $onError;
 
-  function __construct(string $sqlUri)
+  function __construct(string $sqlUri, callable $onError = null)
   {
-
+    $this->onError = $onError;
 
     $sqlFactory = new MySQL\Factory();
 
@@ -39,28 +36,26 @@ class Connection implements MySQL\ConnectionInterface
     });
   }
 
-  public function busyCounter()
-  {
-    return $this->busyCounter;
-  }
-
   public function query($sql, $params = [])
   {
-    $this->busyCounter++;
     return $this->connection->query($sql, $params)->then(
-      function (QueryResult $result) {
-        $this->busyCounter--;
+      function (MySQL\QueryResult $result) {
         return $result;
+      },
+      function (\Throwable $th) use ($sql) {
+        if (is_callable($this->onError)) {
+          return call_user_func($this->onError, $th, $sql);
+        }
+        throw $th;
       }
     );
   }
 
   public function queryStream($sql, $params = [])
   {
-    $this->busyCounter++;
     $stream = $this->connection->queryStream($sql, $params);
-    $stream->on('end', function () {
-      $this->busyCounter--;
+    $stream->on('error', function (\Throwable $th) use ($sql) {
+      return call_user_func($this->onError, $th, $sql);
     });
     return $stream;
   }
